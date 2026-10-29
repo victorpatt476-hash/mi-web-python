@@ -45,7 +45,6 @@ def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
     
-    # Tablas del ecosistema
     cur.execute('CREATE TABLE IF NOT EXISTS stats (id SERIAL PRIMARY KEY, page_views INT DEFAULT 0);')
     cur.execute('SELECT COUNT(*) FROM stats;')
     if cur.fetchone()[0] == 0:
@@ -55,12 +54,11 @@ def init_db():
     cur.execute('CREATE TABLE IF NOT EXISTS trades (id SERIAL PRIMARY KEY, asset VARCHAR(50) NOT NULL, type VARCHAR(10) NOT NULL, entry_price NUMERIC NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);')
     cur.execute('CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL);')
     
-    # Nuevas tablas para las 5 funciones
-    cur.execute('CREATE TABLE IF NOT EXISTS instagram_queue (id SERIAL PRIMARY KEY, media_title VARCHAR(255), status VARCHAR(50) DEFAULT "Pending", created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);')
+    # Nuevas tablas para bots e inteligencia
+    cur.execute("CREATE TABLE IF NOT EXISTS instagram_queue (id SERIAL PRIMARY KEY, media_title VARCHAR(255), status VARCHAR(50) DEFAULT 'Pending', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
     cur.execute('CREATE TABLE IF NOT EXISTS global_intel (id SERIAL PRIMARY KEY, keyword VARCHAR(255), data_snippet TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);')
     cur.execute('CREATE TABLE IF NOT EXISTS security_logs (id SERIAL PRIMARY KEY, event_type VARCHAR(100), details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);')
 
-    # Crear usuario admin por defecto
     cur.execute('SELECT COUNT(*) FROM users WHERE username = %s;', ('admin',))
     if cur.fetchone()[0] == 0:
         hashed_pw = generate_password_hash('bluedemon2026')
@@ -140,7 +138,6 @@ def add_trade():
             print(f"Error guardando trade: {e}")
     return redirect(url_for('trading'))
 
-# Funciones Avanzadas en Tools
 @app.route('/tools')
 @login_required
 def tools():
@@ -171,7 +168,7 @@ def add_ig_post():
         try:
             conn = get_db_connection()
             cur = conn.cursor()
-            cur.execute('INSERT INTO instagram_queue (media_title, status) VALUES (%s, %s);', (title, 'Ready to Upload'))
+            cur.execute("INSERT INTO instagram_queue (media_title, status) VALUES (%s, %s);", (title, 'Ready to Upload'))
             conn.commit()
             cur.close()
             conn.close()
@@ -212,9 +209,8 @@ def login():
                 cur.execute('SELECT id, username, password_hash FROM users WHERE username = %s;', (username,))
                 user_data = cur.fetchone()
                 
-                # Registrar intento en security_logs
                 if user_data and check_password_hash(user_data[2], password):
-                    cur.execute('INSERT INTO security_logs (event_type, details) VALUES (%s, %s);', ('SUCCESSFUL_LOGIN', f'User {username} logged in successfully.'))
+                    cur.execute('INSERT INTO security_logs (event_type, details) VALUES (%s, %s);', ('SUCCESSFUL_LOGIN', f'User {username} logged in.'))
                     conn.commit()
                     cur.close()
                     conn.close()
@@ -223,7 +219,7 @@ def login():
                     login_user(user_obj)
                     return redirect(url_for('trading'))
                 else:
-                    cur.execute('INSERT INTO security_logs (event_type, details) VALUES (%s, %s);', ('FAILED_LOGIN', f'Failed attempt for username: {username}'))
+                    cur.execute('INSERT INTO security_logs (event_type, details) VALUES (%s, %s);', ('FAILED_LOGIN', f'Failed attempt for: {username}'))
                     conn.commit()
                     cur.close()
                     conn.close()
