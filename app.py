@@ -2,7 +2,9 @@ import os
 from flask import Flask, render_template, request, redirect, url_for
 import psycopg2
 
-app = Flask(__name__)
+# Forzar la ruta absoluta de templates para que Render nunca falle
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+app = Flask(__name__, template_folder=template_dir)
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -14,7 +16,6 @@ def init_db():
         return
     conn = get_db_connection()
     cur = conn.cursor()
-    # Tabla de contador
     cur.execute('''
         CREATE TABLE IF NOT EXISTS stats (
             id SERIAL PRIMARY KEY,
@@ -25,7 +26,6 @@ def init_db():
     if cur.fetchone()[0] == 0:
         cur.execute('INSERT INTO stats (page_views) VALUES (0);')
     
-    # Tabla de suscriptores
     cur.execute('''
         CREATE TABLE IF NOT EXISTS subscribers (
             id SERIAL PRIMARY KEY,
