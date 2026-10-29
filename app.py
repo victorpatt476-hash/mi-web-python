@@ -1,25 +1,78 @@
-from flask import Flask, render_template_string
+import os
+from flask import Flask, render_template, request, redirect, url_for
+import psycopg2
 
 app = Flask(__name__)
 
-# Página principal
-@app.route("/")
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL)
+
+def init_db():
+    if not DATABASE_URL:
+        return
+    conn = get_db_connection()
+    cur = conn.cursor()
+    # Tabla de contador
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS stats (
+            id SERIAL PRIMARY KEY,
+            page_views INT DEFAULT 0
+        );
+    ''')
+    cur.execute('SELECT COUNT(*) FROM stats;')
+    if cur.fetchone()[0] == 0:
+        cur.execute('INSERT INTO stats (page_views) VALUES (0);')
+    
+    # Tabla de suscriptores
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS subscribers (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ''')
+    conn.commit()
+    cur.close()
+    conn.close()
+
+try:
+    init_db()
+except Exception as e:
+    print(f"Error inicializando base de datos: {e}")
+
+@app.route('/')
 def home():
-    return """
-    <html>
-        <head><title>Mi Web con Python</title></head>
-        <body style="font-family: Arial; text-align: center; margin-top: 50px;">
-            <h1>¡Hola desde mi propio servidor de Python! 🚀</h1>
-            <p>Este servidor corre con Flask y está listo para la acción.</p>
-            <a href="/api/estado">Ver Estado de la API</a>
-        </body>
-    </html>
-    """
+    views = 0
+    if DATABASE_URL:
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('UPDATE stats SET page_views = page_views + 1 WHERE id = 1 RETURNING page_views;')
+            views = cur.fetchone()[0]
+            conn.commit()
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error al actualizar contador: {e}")
+            
+    return render_template('index.html', visits=views)
 
-# Una ruta de API que devuelve JSON (ideal para tus pruebas con bots)
-@app.route("/api/estado")
-def estado():
-    return {"status": "online", "servidor": "Flask + Render", "base_datos": "Pendiente de conectar"}
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    email = request.form.get('email')
+    if email and DATABASE_URL:
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('INSERT INTO subscribers (email) VALUES (%s) ON CONFLICT (email) DO NOTHING;', (email,))
+            conn.commit()
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error guardando email: {e}")
+    return redirect(url_for('home'))
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
