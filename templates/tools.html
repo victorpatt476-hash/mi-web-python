@@ -1,35 +1,111 @@
-{% extends 'base.html' %}
-{% block title %}Tools & Automation | Ecosistema Digital{% endblock %}
+{% extends "base.html" %}
+{% block title %}Tools & Automation Hub{% endblock %}
 {% block content %}
 <div class="space-y-8">
-    <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl">
-        <h1 class="text-3xl font-extrabold text-white flex items-center gap-3">
-            <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i> Tools & Automation Hub
+    <div class="border-b border-gray-800 pb-4">
+        <h1 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-500">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Centro de Control & Automatización
         </h1>
-        <p class="text-gray-400 text-sm mt-1">Centro de comandos para scripts de Python, procesamiento multimedia y automatizaciones web.</p>
+        <p class="text-gray-400 text-sm mt-1">Gestiona tus bots de redes sociales, base de conocimiento y auditoría de seguridad.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-4">
-            <div class="w-10 h-10 rounded-xl bg-purple-950 border border-purple-800 flex items-center justify-center text-purple-400">
-                <i class="fa-solid fa-download"></i>
-            </div>
-            <h2 class="text-xl font-bold text-white">Media Downloader (yt-dlp)</h2>
-            <p class="text-gray-400 text-sm">Procesa y descarga contenido de plataformas sociales de forma automatizada.</p>
-            <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl text-xs text-purple-300 font-mono">
-                Estado del Script: <span class="text-emerald-400 font-bold">Activo (Ready)</span>
+        <!-- 1. Bot de Instagram Queue -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-pink-400">
+                <i class="fa-brands fa-instagram"></i> Cola Bot Instagram
+            </h2>
+            <form action="/tools/ig/add" method="POST" class="space-y-3 mb-6">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Título del Video / Reel</label>
+                    <input type="text" name="title" required placeholder="Ej. Beat Drill #4 Snippet" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-pink-500">
+                </div>
+                <button type="submit" class="w-full bg-pink-600 hover:bg-pink-700 font-semibold py-2 rounded-lg text-sm transition text-white">
+                    <i class="fa-solid fa-plus"></i> Añadir a Cola de Subida
+                </button>
+            </form>
+
+            <div class="space-y-2">
+                {% for post in ig_posts %}
+                <div class="bg-gray-950 p-3 rounded-lg border border-gray-800 flex justify-between items-center text-xs">
+                    <span class="text-gray-300 font-medium">{{ post[1] }}</span>
+                    <span class="bg-pink-950 text-pink-400 px-2 py-1 rounded border border-pink-900 font-mono">{{ post[2] }}</span>
+                </div>
+                {% else %}
+                <p class="text-xs text-gray-500 italic text-center py-4">No hay videos en cola actualmente.</p>
+                {% endfor %}
             </div>
         </div>
 
-        <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl space-y-4">
-            <div class="w-10 h-10 rounded-xl bg-blue-950 border border-blue-800 flex items-center justify-center text-blue-400">
-                <i class="fa-solid fa-shield-halved"></i>
+        <!-- 2. Motor Global Intel / Scraping -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-blue-400">
+                <i class="fa-solid fa-globe"></i> Base de Datos Global Intel
+            </h2>
+            <form action="/tools/intel/add" method="POST" class="space-y-3 mb-6">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Palabra Clave / Tema</label>
+                    <input type="text" name="keyword" required placeholder="Ej. Tendencias UK Drill" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Información / Snippet</label>
+                    <input type="text" name="snippet" required placeholder="Datos recopilados..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 font-semibold py-2 rounded-lg text-sm transition text-white">
+                    <i class="fa-solid fa-database"></i> Guardar en Intel Base
+                </button>
+            </form>
+
+            <div class="space-y-2">
+                {% for item in intel_data %}
+                <div class="bg-gray-950 p-3 rounded-lg border border-gray-800 text-xs">
+                    <div class="flex justify-between font-bold text-blue-400 mb-1">
+                        <span>{{ item[1] }}</span>
+                        <span class="text-gray-500 font-normal">{{ item[3] }}</span>
+                    </div>
+                    <p class="text-gray-300">{{ item[2] }}</p>
+                </div>
+                {% else %}
+                <p class="text-xs text-gray-500 italic text-center py-4">Sin datos de inteligencia almacenados.</p>
+                {% endfor %}
             </div>
-            <h2 class="text-xl font-bold text-white">Security & Audit Suite</h2>
-            <p class="text-gray-400 text-sm">Verificación de configuraciones del sistema, credenciales y guías de seguridad caseras.</p>
-            <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl text-xs text-blue-300 font-mono">
-                Protocolo: <span class="text-emerald-400 font-bold">Zero-Day Intel Ready</span>
-            </div>
+        </div>
+    </div>
+
+    <!-- 3. Logs de Seguridad (Audit Trail) -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-emerald-400">
+            <i class="fa-solid fa-shield-halved"></i> Auditoría de Accesos & Seguridad
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="border-b border-gray-800 text-gray-400 font-mono">
+                        <th class="py-2 px-3">ID</th>
+                        <th class="py-2 px-3">EVENTO</th>
+                        <th class="py-2 px-3">DETALLES</th>
+                        <th class="py-2 px-3">FECHA / HORA</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800/50">
+                    {% for log in sec_logs %}
+                    <tr class="hover:bg-gray-950/50">
+                        <td class="py-3 px-3 font-mono text-gray-500">#{{ log[0] }}</td>
+                        <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded font-mono {% if log[1] == 'SUCCESSFUL_LOGIN' %}bg-emerald-950 text-emerald-400 border border-emerald-900{% else %}bg-rose-950 text-rose-400 border border-rose-900{% endif %}">
+                                {{ log[1] }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-3 text-gray-300">{{ log[2] }}</td>
+                        <td class="py-3 px-3 text-gray-500 font-mono">{{ log[3] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-gray-500 italic">No hay registros de seguridad todavía.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
