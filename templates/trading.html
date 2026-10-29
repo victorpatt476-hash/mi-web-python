@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Trading Journal | Ecosistema Digital{% endblock %}
+{% block content %}
+<div class="space-y-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-900 border border-gray-800 p-6 rounded-2xl">
+        <div>
+            <h1 class="text-3xl font-extrabold text-white flex items-center gap-3">
+                <i class="fa-solid fa-chart-line text-emerald-500"></i> Trading & Crypto Journal
+            </h1>
+            <p class="text-gray-400 text-sm mt-1">Registra tus entradas, salidas, análisis técnico y rendimiento de mercado.</p>
+        </div>
+        <div class="bg-emerald-950/60 border border-emerald-800/80 px-4 py-2 rounded-xl text-emerald-400 text-sm font-semibold">
+            LockIn Szn 🚀
+        </div>
+    </div>
+
+    <!-- Formulario para Nuevo Trade -->
+    <div class="bg-gray-900/70 border border-gray-800 p-6 rounded-2xl">
+        <h2 class="text-xl font-bold text-white mb-4">Registrar Nueva Operación</h2>
+        <form action="/trading/add" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">Activo / Par</label>
+                <input type="text" name="asset" required placeholder="SOL/USDT" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">Tipo</label>
+                <select name="type" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                    <option value="LONG">LONG (Compra)</option>
+                    <option value="SHORT">SHORT (Venta)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">Precio de Entrada</label>
+                <input type="number" step="any" name="entry_price" required placeholder="0.00" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 font-semibold text-white px-4 py-2.5 rounded-xl text-sm transition">Guardar Trade</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Historial de Trades -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+        <div class="p-6 border-b border-gray-800">
+            <h3 class="text-lg font-bold text-white">Historial de Operaciones</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-400">
+                <thead class="bg-gray-950 text-gray-300 uppercase text-xs">
+                    <tr>
+                        <th class="px-6 py-3">Activo</th>
+                        <th class="px-6 py-3">Tipo</th>
+                        <th class="px-6 py-3">Precio Entrada</th>
+                        <th class="px-6 py-3">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800">
+                    {% if trades %}
+                        {% for trade in trades %}
+                        <tr class="hover:bg-gray-850">
+                            <td class="px-6 py-4 font-bold text-white">{{ trade[1] }}</td>
+                            <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-lg text-xs font-bold {{ 'bg-emerald-950 text-emerald-400 border border-emerald-800' if trade[2] == 'LONG' else 'bg-rose-950 text-rose-400 border border-rose-800' }}">{{ trade[2] }}</span></td>
+                            <td class="px-6 py-4 font-mono text-gray-200">{{ trade[3] }}</td>
+                            <td class="px-6 py-4 text-xs text-gray-500">{{ trade[4] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-gray-500">No hay operaciones registradas todavía. ¡Empieza a tradear!</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
